@@ -93,8 +93,8 @@ defmodule Game do
     {:noreply, new_state}
   end
 
-  def handle_cast({:remove_player, id}, state) do
-    players = state["players"] |> Map.pop(id)
+  def handle_cast({:delete_player, id}, state) do
+    {_, players} = state["players"] |> Map.pop(id)
     {:noreply, state |> Map.put("players", players)}
   end
 

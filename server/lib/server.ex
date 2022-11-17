@@ -45,6 +45,13 @@ defmodule Server do
         else: conn |> send_status(404)
     end
 
+    defp with_player(conn, gid, pid, fun), do: conn |> with_game(gid, fn game ->
+      player = game |> GenServer.call({:get_player, pid})
+      if player,
+        do: fun.(game, player),
+        else: conn |> send_status(404)
+    end)
+
     get "/games" do
       games = Games.get_games()
       conn |> send_json(200, games)
@@ -70,17 +77,26 @@ defmodule Server do
     end)
 
     post "/games/:gid/players/:pid", do: conn |> with_game(gid, fn game ->
-      game |> GenServer.cast({:add_player, pid})
-      conn |> send_status(201)
+      if game |> GenServer.call({:get_player, pid}) do
+        conn |> send_status(403)
+      else
+        game |> GenServer.cast({:add_player, pid})
+        conn |> send_status(201)
+      end
     end)
 
-    put "/games/:gid/players/:pid", do: conn |> with_game(gid, fn game ->
+    put "/games/:gid/players/:pid", do: conn |> with_player(gid, pid, fn game, _ ->
       game |> GenServer.cast({:update_player, pid, conn.body_params})
       conn |> send_status(200)
     end)
 
-    put "/games/:gid/players/:pid/meta", do: conn |> with_game(gid, fn game ->
+    put "/games/:gid/players/:pid/meta", do: conn |> with_player(gid, pid, fn game, _ ->
       game |> GenServer.cast({:update_player_meta, pid, conn.body_params})
+      conn |> send_status(200)
+    end)
+
+    delete "/games/:gid/players/:pid", do: conn |> with_player(gid, pid, fn game, _ ->
+      game |> GenServer.cast({:delete_player, pid})
       conn |> send_status(200)
     end)
 
