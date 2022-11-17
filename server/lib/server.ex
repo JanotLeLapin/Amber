@@ -57,7 +57,7 @@ defmodule Server do
 
     patch "/games/:id/start", do:
       conn |> with_game(id, fn game ->
-        game |> Game.start_game
+        game |> GenServer.cast({:start})
         conn |> send_status(200)
       end)
 
@@ -66,11 +66,11 @@ defmodule Server do
     end)
 
     get "/games/:id/players", do: conn |> with_game(id, fn game ->
-      conn |> send_json(200, game |> Game.get_players)
+      conn |> send_json(200, game |> GenServer.call({:get_players}))
     end)
 
     post "/games/:gid/players/:pid", do: conn |> with_game(gid, fn game ->
-      game |> Game.add_player(pid)
+      game |> GenServer.cast({:add_player, pid})
       conn |> send_status(201)
     end)
 
@@ -80,7 +80,7 @@ defmodule Server do
     end)
 
     put "/games/:gid/players/:pid/meta", do: conn |> with_game(gid, fn game ->
-      game |> Game.update_player_meta(pid, conn.body_params)
+      game |> GenServer.cast({:update_player_meta, pid, conn.body_params})
       conn |> send_status(200)
     end)
 

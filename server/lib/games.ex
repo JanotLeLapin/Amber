@@ -17,7 +17,7 @@ defmodule Games do
     game =
       __MODULE__
       |> DynamicSupervisor.which_children()
-      |> Enum.find(fn {_, child, _, _} -> child |> Game.get_id() == id end)
+      |> Enum.find(fn {_, child, _, _} -> child |> GenServer.call({:get_id}) == id end)
 
     case game do
       nil -> nil
@@ -36,14 +36,15 @@ defmodule Games do
   def get_games() do
     __MODULE__
     |> DynamicSupervisor.which_children()
-    |> Enum.map(fn {_, child, _, _} -> child |> Game.get_id() end)
+    |> Enum.map(fn {_, child, _, _} -> child |> GenServer.call({:get_id}) end)
   end
 
-  @spec find_player(String.t()) :: pid()
-  def find_player(id) do
-    __MODULE__
+  @spec find_game_from_player(String.t()) :: pid()
+  def find_game_from_player(id) do
+    {_, child, _, _} = __MODULE__
     |> DynamicSupervisor.which_children()
-    |> Enum.map(fn {_, child, _, _} -> child |> Game.get_player(id) end)
-    |> Enum.find(fn player -> player end)
+    |> Enum.find(fn {_, child, _, _} -> child |> GenServer.call({:get_player, id}) end)
+
+    child
   end
 end

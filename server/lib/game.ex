@@ -17,28 +17,6 @@ defmodule Game do
       else: :os.system_time(:millisecond) - start
   end
 
-  @doc """
-  Starts the game, if not already running
-  """
-  @spec start_game(pid()) :: term()
-  def start_game(pid), do: pid |> GenServer.cast({:start})
-
-  @spec add_player(pid(), String.t()) :: term()
-  def add_player(pid, id), do: pid |> GenServer.cast({:add_player, id})
-  @spec update_player_meta(pid(), String.t(), map()) :: term()
-  def update_player_meta(pid, id, meta),
-    do: pid |> GenServer.cast({:update_player_meta, id, meta})
-
-  @spec remove_player(pid(), String.t()) :: term()
-  def remove_player(pid, id), do: pid |> GenServer.cast({:remove_player, id})
-
-  @spec get_id(pid()) :: String.t()
-  def get_id(pid), do: pid |> GenServer.call({:get_id})
-  @spec get_players(pid()) :: map()
-  def get_players(pid), do: pid |> GenServer.call({:get_players})
-  @spec get_player(pid(), String.t()) :: map() | nil
-  def get_player(pid, id), do: pid |> GenServer.call({:get_player, id})
-
   def start_link(id) do
     __MODULE__ |> GenServer.start_link(id)
   end
@@ -123,7 +101,6 @@ defmodule Game do
   def handle_call({:get_id}, _, state), do: {:reply, state["id"], state}
   def handle_call({:get_start}, _, state), do: {:reply, state["start"], state}
   def handle_call({:get_players}, _, state), do: {:reply, state["players"], state}
-
   def handle_call({:get_player, id}, _, state) do
     player = state["players"] |> Map.get(id)
     {:reply, player, state}
