@@ -35,7 +35,14 @@ defmodule Server do
     end
 
     defp send_status(conn, status) do
-      conn |> send_status(status)
+      conn |> send_resp(status, "")
+    end
+
+    defp with_game(conn, id, fun) do
+      game = id |> Games.get_game()
+      if game,
+        do: fun.(game),
+        else: conn |> send_status(404)
     end
 
     get "/games" do
@@ -48,24 +55,29 @@ defmodule Server do
       conn |> send_resp(200, uuid)
     end
 
-    patch "/games/:id/start" do
-      game = Games.get_game(id)
-
-      if game do
-        game |> Game.start_game()
+    patch "/games/:id/start", do:
+      conn |> with_game(id, fn game ->
+        game |> Game.start_game
         conn |> send_status(200)
-      else
-        conn |> send_status(404)
-      end
-    end
+      end)
 
-    get "/games/:id/time" do
-      game = Games.get_game(id)
+    get "/games/:id/time", do: conn |> with_game(id, fn game ->
+      conn |> send_resp(200, game |> Game.time |> Integer.to_string)
+    end)
 
-      if game,
-        do: conn |> send_resp(200, game |> Game.time() |> Integer.to_string()),
-        else: conn |> send_status(404)
-    end
+    get "/games/:id/players", do: conn |> with_game(id, fn game ->
+      conn |> send_json(200, game |> Game.get_players)
+    end)
+
+    post "/games/:gid/players/:pid", do: conn |> with_game(gid, fn game ->
+      game |> Game.add_player(pid)
+      conn |> send_status(201)
+    end)
+
+    put "/games/:gid/players/:pid", do: conn |> with_game(gid, fn game ->
+      game |> Game.update_player_meta(pid, conn.body_params)
+      conn |> send_status(200)
+    end)
 
     match _ do
       conn |> send_status(400)
