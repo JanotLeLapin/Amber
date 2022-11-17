@@ -75,6 +75,11 @@ defmodule Server do
     end)
 
     put "/games/:gid/players/:pid", do: conn |> with_game(gid, fn game ->
+      game |> GenServer.cast({:update_player, pid, conn.body_params})
+      conn |> send_status(200)
+    end)
+
+    put "/games/:gid/players/:pid/meta", do: conn |> with_game(gid, fn game ->
       game |> Game.update_player_meta(pid, conn.body_params)
       conn |> send_status(200)
     end)

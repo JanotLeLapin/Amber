@@ -96,6 +96,18 @@ defmodule Game do
     {:noreply, new_state}
   end
 
+  def handle_cast({:update_player, id, data}, state) do
+    player = state["players"][id]
+    data = data |> Map.take(player |> Map.keys)
+    new_player = Map.merge(player, data, fn k, v1, v2 ->
+      case k do
+        "meta" -> v1
+        _ -> v2
+      end
+    end)
+
+    {:noreply, state |> Map.put("players", state["players"] |> Map.put(id, new_player))}
+  end
   def handle_cast({:update_player_meta, id, data}, state) do
     new_state =
       state |> update_player(id, "meta", fn player -> Map.merge(player["meta"], data) end)
