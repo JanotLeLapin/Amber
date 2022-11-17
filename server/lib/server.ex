@@ -53,7 +53,7 @@ defmodule Server do
     end)
 
     get "/games" do
-      games = Games.get_games()
+      games = Games.get_games
       conn |> send_json(200, games)
     end
 
@@ -74,6 +74,11 @@ defmodule Server do
 
     get "/games/:id/players", do: conn |> with_game(id, fn game ->
       conn |> send_json(200, game |> GenServer.call({:get_players}))
+    end)
+
+    delete "/games/:id", do: conn |> with_game(id, fn game ->
+      game |> Games.delete_game
+      conn |> send_status(200)
     end)
 
     post "/games/:gid/players/:pid", do: conn |> with_game(gid, fn game ->
