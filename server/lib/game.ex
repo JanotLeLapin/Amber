@@ -31,22 +31,6 @@ defmodule Game do
       }
     }
 
-  @spec update_player(map(), String.t(), String.t(), function()) :: map()
-  defp update_player(state, id, k, v) do
-    players = state["players"]
-    player = players |> Map.get(id)
-
-    state
-    |> Map.put(
-      "players",
-      players
-      |> Map.put(
-        id,
-        player |> Map.put(k, v.(player))
-      )
-    )
-  end
-
   def handle_cast({:start}, state) do
     new_state =
       if state["start"] == -1,
@@ -64,8 +48,7 @@ defmodule Game do
         players =
           state["players"]
           |> Map.put(id, %{
-            "spec" => false,
-            "meta" => %{}
+            "spec" => false
           })
 
         state |> Map.put("players", players)
@@ -74,23 +57,9 @@ defmodule Game do
     {:noreply, new_state}
   end
 
-  def handle_cast({:update_player, id, data}, state) do
-    player = state["players"][id]
-    data = data |> Map.take(player |> Map.keys)
-    new_player = Map.merge(player, data, fn k, v1, v2 ->
-      case k do
-        "meta" -> v1
-        _ -> v2
-      end
-    end)
-
-    {:noreply, state |> Map.put("players", state["players"] |> Map.put(id, new_player))}
-  end
-  def handle_cast({:update_player_meta, id, data}, state) do
-    new_state =
-      state |> update_player(id, "meta", fn player -> Map.merge(player["meta"], data) end)
-
-    {:noreply, new_state}
+  def handle_cast({:update_player, id, k, v}, state) do
+    player = state["players"][id] |> Map.put(k, v)
+    {:noreply, state |> Map.put("players", state["players"] |> Map.put(id, player))}
   end
 
   def handle_cast({:delete_player, id}, state) do
@@ -100,9 +69,11 @@ defmodule Game do
 
   def handle_call({:get_id}, _, state), do: {:reply, state["id"], state}
   def handle_call({:get_start}, _, state), do: {:reply, state["start"], state}
-  def handle_call({:get_players}, _, state), do: {:reply, state["players"], state}
-  def handle_call({:get_player, id}, _, state) do
-    player = state["players"] |> Map.get(id)
-    {:reply, player, state}
-  end
+  def handle_call({:get_players}, _, state), do: {:reply, state["players"] |> Map.keys(), state}
+
+  def handle_call({:player_exists, id}, _, state),
+    do: {:reply, state["players"] |> Map.has_key?(id), state}
+
+  def handle_call({:get_player, id, k}, _, state),
+    do: {:reply, state["players"] |> Map.get(id) |> Map.get(k), state}
 end

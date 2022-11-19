@@ -15,25 +15,25 @@
 
 (defn get-game-time
   "Returns the time that elapsed since the game started in milliseconds."
-  [^str game]
+  [game]
   (Integer/parseInt (get (client/get (str url "/games/" game "/time")) :body)))
 
 (defn start-game
   "Effectively sets the game as running, should be called when the game starts."
-  [^str game]
-  (client/patch (str url "/games/" game "/start"))
+  [game]
+  (client/patch (str url "/games/" game "/time"))
   nil)
 
 (defn delete-game
   "Deletes the game, and every player in the game."
-  [^str game]
+  [game]
   (client/delete (str url "/games/" game))
   nil)
 
 (defn add-player
   "Adds a player with the specified identifier to the game."
-  [^str game ^str player]
-  (client/post (str url "/games/" game "/players/" player))
+  [game player]
+  (client/post (str url "/games/" game "/players") {:body player})
   nil)
 
 (defn get-players
@@ -41,20 +41,16 @@
   [game]
   (get (client/get (str url "/games/" game "/players") {:as :json}) :body))
 
+(defn get-player
+  [game player k]
+  (get (get (client/get (str url "/games/" game "/players/" player "/" k) {:as :json}) :body) :v))
+
 (defn update-player
   "Updates the player with the given map."
-  [game player data]
-  (client/put (str url "/games/" game "/players/" player)
-              {:content-type :json
-               :form-params data})
-  nil)
-
-(defn update-player-meta
-  "Updates the player metadata with the given map."
-  [game player data]
-  (client/put (str url "/games/" game "/players/" player "/meta")
-              {:content-type :json
-               :form-params data})
+  [game player k v]
+  (client/put (str url "/games/" game "/players/" player "/" k)
+              {:form-params {:v v}
+               :content-type :json})
   nil)
 
 (defn delete-player

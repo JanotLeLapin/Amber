@@ -28,11 +28,15 @@ defmodule Games do
   @spec create_game :: {String.t(), pid()}
   def create_game do
     uuid = UUID.uuid4()
-    {:ok, pid} = __MODULE__ |> DynamicSupervisor.start_child(%{
-      id: uuid,
-      start: {Game, :start_link, [uuid]},
-      restart: :temporary,
-    })
+
+    {:ok, pid} =
+      __MODULE__
+      |> DynamicSupervisor.start_child(%{
+        id: uuid,
+        start: {Game, :start_link, [uuid]},
+        restart: :temporary
+      })
+
     {uuid, pid}
   end
 
@@ -48,9 +52,10 @@ defmodule Games do
 
   @spec find_game_from_player(String.t()) :: pid()
   def find_game_from_player(id) do
-    {_, child, _, _} = __MODULE__
-    |> DynamicSupervisor.which_children()
-    |> Enum.find(fn {_, child, _, _} -> child |> GenServer.call({:get_player, id}) end)
+    {_, child, _, _} =
+      __MODULE__
+      |> DynamicSupervisor.which_children()
+      |> Enum.find(fn {_, child, _, _} -> child |> GenServer.call({:get_player, id}) end)
 
     child
   end
