@@ -44,7 +44,7 @@
 
 (defn get-player
   [game player k]
-  (json/read-str (get (get (client/get (str url "/games/" game "/players/" player "/" k)) :body) :v)))
+  (get (json/read-str (get (client/get (str url "/games/" game "/players/" player "/" k)) :body)) "v"))
 
 (defn update-player
   "Updates the player with the given map."

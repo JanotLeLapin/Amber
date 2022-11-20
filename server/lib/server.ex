@@ -63,7 +63,7 @@ defmodule Server do
       conn |> send_resp(200, uuid)
     end
 
-    patch("/games/:id/time",
+    put("/games/:id/time",
       do:
         conn
         |> with_game(id, fn game ->
@@ -102,12 +102,11 @@ defmodule Server do
         conn
         |> with_player(gid, pid, fn game ->
           conn
-          |> send_resp(
+          |> send_json(
             200,
             %{
               "v" => game |> GenServer.call({:get_player, pid, key})
             }
-            |> Jason.encode!()
           )
         end)
     )
