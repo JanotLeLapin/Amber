@@ -10,7 +10,7 @@ defmodule Game do
   """
   @spec time(pid()) :: integer()
   def time(pid) do
-    start = pid |> GenServer.call({:get_start})
+    start = pid |> GenServer.call({:get, "start"})
 
     if start == -1,
       do: -1,
@@ -57,6 +57,9 @@ defmodule Game do
     {:noreply, new_state}
   end
 
+  def handle_cast({:update, k, v}, state) when k not in ~w(id start players),
+    do: {:noreply, state |> Map.put(k, v)}
+
   def handle_cast({:update_player, id, k, v}, state) do
     player = state["players"][id] |> Map.put(k, v)
     {:noreply, state |> Map.put("players", state["players"] |> Map.put(id, player))}
@@ -67,8 +70,7 @@ defmodule Game do
     {:noreply, state |> Map.put("players", players)}
   end
 
-  def handle_call({:get_id}, _, state), do: {:reply, state["id"], state}
-  def handle_call({:get_start}, _, state), do: {:reply, state["start"], state}
+  def handle_call({:get, k}, _, state), do: {:reply, state[k], state}
   def handle_call({:get_players}, _, state), do: {:reply, state["players"] |> Map.keys(), state}
 
   def handle_call({:player_exists, id}, _, state),
