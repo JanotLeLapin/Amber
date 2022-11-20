@@ -1,5 +1,6 @@
 (ns janotlelapin.amber
-  (:require [clj-http.client :as client]))
+  (:require [clj-http.lite.client :as client]
+            [clojure.data.json :as json]))
 
 (def url "http://localhost:4200")
 
@@ -11,7 +12,7 @@
 (defn get-games
   "Returns a vector containing each game id."
   []
-  (get (client/get (str url "/games") {:as :json}) :body))
+  (json/read-str (get (client/get (str url "/games")) :body)))
 
 (defn get-game-time
   "Returns the time that elapsed since the game started in milliseconds."
@@ -21,7 +22,7 @@
 (defn start-game
   "Effectively sets the game as running, should be called when the game starts."
   [game]
-  (client/patch (str url "/games/" game "/time"))
+  (client/put (str url "/games/" game "/time"))
   nil)
 
 (defn delete-game
@@ -39,18 +40,17 @@
 (defn get-players
   "Returns every player from the given game."
   [game]
-  (get (client/get (str url "/games/" game "/players") {:as :json}) :body))
+  (json/read-str (get (client/get (str url "/games/" game "/players")) :body)))
 
 (defn get-player
   [game player k]
-  (get (get (client/get (str url "/games/" game "/players/" player "/" k) {:as :json}) :body) :v))
+  (json/read-str (get (get (client/get (str url "/games/" game "/players/" player "/" k)) :body) :v)))
 
 (defn update-player
   "Updates the player with the given map."
   [game player k v]
   (client/put (str url "/games/" game "/players/" player "/" k)
-              {:form-params {:v v}
-               :content-type :json})
+              {:body (json/write-str {:v v})})
   nil)
 
 (defn delete-player
