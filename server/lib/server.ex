@@ -98,7 +98,13 @@ defmodule Server do
       do:
         conn
         |> with_game(id, fn game ->
-          conn |> send_json(200, game |> GenServer.call({:get, key}))
+          conn
+          |> send_json(
+            200,
+            %{
+              "v" => game |> GenServer.call({:get, key})
+            }
+          )
         end)
     )
 
