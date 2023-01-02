@@ -1,5 +1,5 @@
-(defproject amber "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
+(defproject amber "1.0.0"
+  :description "Amber client written in Clojure"
   :url "http://example.com/FIXME"
   :license {:name "GPL-3.0"
             :url "https://www.gnu.org/licenses/gpl-3.0"}
