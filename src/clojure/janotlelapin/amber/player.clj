@@ -15,15 +15,13 @@
 (defn create-player
   "Adds a player from its id and game id."
   [game-id player-id]
-  (swap! players assoc player-id {
-    :game game-id
-  }))
+  (swap! players assoc player-id {:game game-id}))
 
 (defn update-player
   "Sets the value for the given player to be: (apply f current-value-of-player args)"
   [player-id f & args]
   (swap! players assoc player-id
-    (apply f (get @players player-id) args)))
+         (apply f (get @players player-id) args)))
 
 (defn delete-player
   "Deletes a player."
