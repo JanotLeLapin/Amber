@@ -8,5 +8,5 @@
                  [org.clj-commons/clj-http-lite "1.0.13"]]
   :source-paths ["src/clojure"]
   :java-source-paths ["src/java"]
-  :repl-options {:init-ns janotlelapin.amber}
+  :repl-options {:init-ns janotlelapin.amber.game}
   :aot :all)
